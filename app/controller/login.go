@@ -1,10 +1,6 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/gogf/gf/encoding/gurl"
-	"github.com/gogf/gf/util/grand"
-	"github.com/pkg/errors"
 	"net/http"
 	"openscrm/app/constants"
 	"openscrm/app/entities"
@@ -14,6 +10,11 @@ import (
 	"openscrm/common/ecode"
 	"openscrm/common/util"
 	"openscrm/conf"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gogf/gf/encoding/gurl"
+	"github.com/gogf/gf/util/grand"
+	"github.com/pkg/errors"
 )
 
 type Login struct {
@@ -91,25 +92,34 @@ func (o *Login) StaffAdminLoginCallback(c *gin.Context) {
 		handler.ResponseBadRequestError(errors.WithStack(err))
 		return
 	}
+	var item *models.Staff
+	if req.StaffID == "" {
+		// 验证state，避免csrf攻击
+		state, ok := handler.StaffAdminSession.Get(string(constants.QrcodeAuthState)).(string)
+		if !ok {
+			handler.ResponseBadRequestError(errors.WithStack(err))
+			return
+		}
 
-	// 验证state，避免csrf攻击
-	state, ok := handler.StaffAdminSession.Get(string(constants.QrcodeAuthState)).(string)
-	if !ok {
-		handler.ResponseBadRequestError(errors.WithStack(err))
-		return
-	}
+		if state != req.State {
+			err = ecode.BadRequest
+			handler.ResponseError(err)
+			return
+		}
 
-	if state != req.State {
-		err = ecode.BadRequest
-		handler.ResponseError(err)
-		return
-	}
-
-	item, err := o.srv.StaffAdminLoginCallback(req.AppID, req.Code)
-	if err != nil {
-		err = errors.Wrap(err, "StaffAdminLoginCallback failed")
-		handler.ResponseError(err)
-		return
+		item, err = o.srv.StaffAdminLoginCallback(req.AppID, req.Code)
+		if err != nil {
+			err = errors.Wrap(err, "StaffAdminLoginCallback failed")
+			handler.ResponseError(err)
+			return
+		}
+	} else {
+		item, err = (&models.Staff{}).ValidatePassword(req.StaffID, "", req.Password)
+		if err != nil {
+			err = errors.Wrap(err, "GetStaffByUserID failed")
+			handler.ResponseError(err)
+			return
+		}
 	}
 
 	handler.StaffAdminSession.Set(string(constants.StaffInfo), util.JsonEncode(item))

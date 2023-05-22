@@ -41,11 +41,13 @@ type StaffAdminLoginResp struct {
 // StaffAdminLoginCallbackReq 企业员工后台扫码登录回调请求
 type StaffAdminLoginCallbackReq struct {
 	// AppID 外部企业ID
-	AppID string `form:"appid" json:"appid" validate:"required,corp_id"`
+	AppID string `form:"appid" json:"appid"`
 	// Code
-	Code string `form:"code" json:"Code" validate:"required"`
+	Code string `form:"code" json:"Code"`
 	// State
-	State string `form:"state" json:"state"`
+	State    string `form:"state" json:"state"`
+	StaffID  string `form:"staffid" json:"staffid"`
+	Password string `form:"password" json:"password"`
 }
 
 // StaffAdminForceLoginReq 调试接口-指定普通管理员强制登录

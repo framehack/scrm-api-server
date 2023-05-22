@@ -5,9 +5,9 @@ services:
   redis:
     image: 'redis:latest'
     restart: always
-    ports:
-      - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass A6UBxB4igUNxPRfx3CpYutH353VYo8Atpc
+    # ports:
+    #   - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning
     volumes:
       - ./docker/redis/data:/data
     healthcheck:
@@ -20,12 +20,12 @@ services:
     image: 'mysql:8.0'
     restart: always
     environment:
-      MYSQL_USER: "open_scrm_demo"
-      MYSQL_PASSWORD: "A6UBxB4igUNxPRfx3CpYutH353VYo8Atpc"
+      MYSQL_USER: "root"
+      MYSQL_PASSWORD: "123456"
       MYSQL_DATABASE: "open_scrm_demo"
-      MYSQL_ROOT_PASSWORD: "A6UBxB4igUNxPRfx3CpYutH353VYo8Atpc"
-    ports:
-      - '3306:3306'
+      MYSQL_ROOT_PASSWORD: "123456"
+    # ports:
+    #   - '3306:3306'
     volumes:
       - ./docker/mysql/data:/var/lib/mysql
     healthcheck:
@@ -54,17 +54,14 @@ services:
 
   # 主Api服务
   api-server:
-    image: centos
-    volumes:
-      - ./bin/api-server:/srv/api-server
-      - ./conf/:/conf/
+    image: openscrm:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # volumes:
+      # - ./conf/:/conf/
     ports:
       - 9001:9001
-    command:
-      - sh
-      - -c
-      - |
-        /srv/api-server
     depends_on:
       mysql:
         condition: service_healthy
@@ -72,23 +69,23 @@ services:
         condition: service_healthy
 
   # 会话存档服务
-  msg-archive-server:
-    image: centos
-    volumes:
-      - ./bin/msg-arch-server:/srv/msg-arch-server
-      - ./docker/lib:/srv/lib
-      - ./conf/:/conf/
-    ports:
-      - 9002:9002
-    environment:
-      - LD_LIBRARY_PATH=/srv/lib
-    command:
-      - sh
-      - -c
-      - |
-        /srv/msg-arch-server
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+  # msg-archive-server:
+  #   image: centos
+  #   volumes:
+  #     - ./bin/msg-arch-server:/srv/msg-arch-server
+  #     - ./docker/lib:/srv/lib
+  #     - ./conf/:/conf/
+  #   ports:
+  #     - 9002:9002
+  #   environment:
+  #     - LD_LIBRARY_PATH=/srv/lib
+  #   command:
+  #     - sh
+  #     - -c
+  #     - |
+  #       /srv/msg-arch-server
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy

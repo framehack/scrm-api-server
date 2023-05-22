@@ -1,9 +1,10 @@
 package conf
 
 import (
-	"github.com/spf13/viper"
 	"log"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 var Settings *config
@@ -89,7 +90,7 @@ type DBConfig struct {
 // redisConfig redis config
 type redisConfig struct {
 	Host        string        `validate:"required"`
-	Password    string        `validate:"required"`
+	Password    string        ``
 	IdleTimeout time.Duration `validate:"required"`
 	DBNumber    int           `validate:"gte=0"`
 	DialTimeout time.Duration `validate:"required"`

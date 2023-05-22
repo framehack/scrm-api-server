@@ -2,12 +2,6 @@ package models
 
 import (
 	"fmt"
-	redis2 "github.com/go-redis/redis/v8"
-	"github.com/jinzhu/copier"
-	"github.com/pkg/errors"
-	"golang.org/x/net/context"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"openscrm/app/constants"
 	"openscrm/app/requests"
 	"openscrm/common/app"
@@ -17,6 +11,13 @@ import (
 	"openscrm/conf"
 	"os"
 	"time"
+
+	redis2 "github.com/go-redis/redis/v8"
+	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
+	"golang.org/x/net/context"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Staff struct {
@@ -25,6 +26,8 @@ type Staff struct {
 	ExtCorpID string `json:"ext_corp_id" gorm:"index;uniqueIndex:idx_ext_corp_id_ext_staff_id;type:char(18);comment:外部企业ID"`
 	//企业内必须唯一。不区分大小写，长度为1~64个字节
 	ExtID string `gorm:"type:varchar(64);uniqueIndex:idx_ext_corp_id_ext_staff_id;comment:外部员工ID" json:"ext_staff_id"`
+	// password
+	Password string `gorm:"type:varchar(64);comment:密码" json:"-"`
 	// RoleID 角色ID
 	RoleID string `json:"role_id" gorm:"type:bigint;comment:角色ID"`
 	// RoleType 角色类型
@@ -127,6 +130,25 @@ func (s *Staff) Get(extStaffID string, extCorpID string, withDepartments bool) (
 	if withDepartments {
 		db = db.Preload("Departments")
 	}
+	err := db.First(staff).Error
+
+	if err != nil {
+		err = errors.WithStack(err)
+		return nil, err
+	}
+
+	return staff, nil
+}
+
+// ValidatePassword 验证密码
+func (s *Staff) ValidatePassword(extStaffID, extCorpID, password string) (*Staff, error) {
+	staff := &Staff{}
+	db := DB.Model(&Staff{}).Where("ext_id = ? & password = ?", extStaffID, password)
+
+	if extCorpID != "" {
+		db = db.Where("ext_corp_id = ?", extCorpID)
+	}
+
 	err := db.First(staff).Error
 
 	if err != nil {

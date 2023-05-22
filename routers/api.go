@@ -1,10 +1,6 @@
 package routers
 
 import (
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"openscrm/app/callback"
 	c "openscrm/app/constants"
 	"openscrm/app/controller"
@@ -13,6 +9,11 @@ import (
 	"openscrm/common/session"
 	"openscrm/conf"
 	_ "openscrm/docs"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 func NewRouter() *gin.Engine {
